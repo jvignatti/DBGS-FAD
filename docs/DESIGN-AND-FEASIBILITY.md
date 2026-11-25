@@ -234,15 +234,16 @@ The earlier Edge spike showed a scrollbar artifact. It does not appear with Play
 6. **The PDF's right table border is clipped** (cosmetic; see above).
 7. **The headless visit loads BGS's Google Analytics and Translate scripts** as part of rendering the page faithfully. It counts as one visit per run in their analytics.
 8. **The PDF is not cryptographically signed.** Integrity is a sha256 in `metadata.json` published on the same site, which detects corruption, not a malicious publisher.
+10. **PDF text layer from the Linux runner sometimes drops a space between body-text words** when copied (e.g. "OPCHome"), although it looks correct on screen. Table names and dates copy cleanly. The cause is font rendering on the runner; it was not seen in PDFs made on Windows.
 9. **The failure banner depends on the failure run reaching Pages.** If Pages itself is down, only the stale banner applies.
 
 ### Acceptance checklist
 
 | # | Criterion | Status |
 |---|---|---|
-| 1 | Reachable via a regular browser URL | Pending: Pages enablement plus the first deploy (repository owner) |
+| 1 | Reachable via a regular browser URL | Met: https://jvignatti.github.io/DBGS-FAD/ (first deploy 2026-11-25 18:52Z) |
 | 2 | No installation for staff | Met: static site |
-| 3 | Automatic retrieval | Built. Verified by the first scheduled run (pending). |
+| 3 | Automatic retrieval | Verified via manual run on GitHub (2026-11-25). First scheduled 07:00 ET run: pending. |
 | 4 | Records displayed accurately | Verified locally against the live page, 2026-11-25 |
 | 5 | Search | Verified (browser tests) |
 | 6 | Direct PDF download of the official page | Verified locally (`download` attribute, same origin) |
