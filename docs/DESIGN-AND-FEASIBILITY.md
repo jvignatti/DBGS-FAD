@@ -234,8 +234,8 @@ The earlier Edge spike showed a scrollbar artifact. It does not appear with Play
 6. **The PDF's right table border is clipped** (cosmetic; see above).
 7. **The headless visit loads BGS's Google Analytics and Translate scripts** as part of rendering the page faithfully. It counts as one visit per run in their analytics.
 8. **The PDF is not cryptographically signed.** Integrity is a sha256 in `metadata.json` published on the same site, which detects corruption, not a malicious publisher.
-10. **PDF text layer from the Linux runner sometimes drops a space between body-text words** when copied (e.g. "OPCHome"), although it looks correct on screen. Table names and dates copy cleanly. The cause is font rendering on the runner; it was not seen in PDFs made on Windows.
 9. **The failure banner depends on the failure run reaching Pages.** If Pages itself is down, only the stale banner applies.
+10. **PDF text layer from the Linux runner sometimes drops a space between body-text words** when copied (e.g. "OPCHome"), although it looks correct on screen. Table names and dates copy cleanly. The cause is font rendering on the runner; it was not seen in PDFs made on Windows.
 
 ### Acceptance checklist
 
