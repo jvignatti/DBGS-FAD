@@ -1,0 +1,78 @@
+# Phase 0b connectivity probe (diagnostic only — deploys nothing).
+# Question it answers: can a GitHub-hosted runner reach the official BGS
+# debarment page through BGS's firewall, using the project's honest UA?
+# Makes 2 page requests total: one plain HTTP GET, one Playwright Chromium load.
+name: Probe BGS connectivity
+
+on:
+  workflow_dispatch: # manual diagnostic only (Phase 0b passed 2026-11-25, run 45659588698)
+
+permissions: {}
+
+concurrency:
+  group: probe-bgs
+  cancel-in-progress: false
+
+env:
+  SOURCE_URL: https://bgs.vermont.gov/purchasing-contracting/debarment
+  UA: "Mozilla/5.0 (compatible; DBGS-FAD/0.1; +https://github.com/jvignatti/DBGS-FAD)"
+  PLAYWRIGHT_VERSION: 1.65.0
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Plain HTTP GET (honest UA)
+        run: |
+          out=$(curl -sS -o /dev/null --max-time 30 -A "$UA" \
+            -w '%{http_code} %{url_effective}' "$SOURCE_URL" || echo "000 curl-error")
+          echo "::notice title=HTTP GET::$out"
+          echo "HTTP GET: $out" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install Playwright Chromium
+        working-directory: ${{ runner.temp }}
+        run: |
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund "playwright@${PLAYWRIGHT_VERSION}"
+          npx playwright install --with-deps chromium
+
+      - name: Playwright Chromium load (honest UA)
+        working-directory: ${{ runner.temp }}
+        run: |
+          cat > probe.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ userAgent: process.env.UA });
+          let result;
+          try {
+            const resp = await page.goto(process.env.SOURCE_URL, { waitUntil: 'load', timeout: 45000 });
+            const norm = s => s.replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
+            const info = await page.evaluate(() => {
+              const norm = s => s.replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
+              const tables = [...document.querySelectorAll('table')].filter(t => {
+                const r = t.rows[0];
+                return r && r.cells.length === 2 &&
+                  norm(r.cells[0].textContent) === 'Name' &&
+                  norm(r.cells[1].textContent) === 'Expiration Term';
+              });
+              return {
+                title: document.title,
+                matchingTables: tables.length,
+                dataRows: tables[0] ? tables[0].rows.length - 1 : null,
+                wrapped: tables[0] ? tables[0].parentElement.classList.contains('usa-table-container--tyler-scrollable') : null,
+              };
+            });
+            result = { status: resp?.status() ?? null, finalUrl: page.url(), ...info, title: norm(info.title) };
+          } catch (e) {
+            result = { error: String(e).slice(0, 300) };
+          }
+          await browser.close();
+          const line = JSON.stringify(result);
+          console.log(`::notice title=Playwright::${line}`);
+          const ok = result.status === 200 && result.finalUrl === process.env.SOURCE_URL &&
+                     /Debarment List/.test(result.title || '') && result.matchingTables === 1;
+          console.log(`::notice title=Verdict::${ok ? 'PASS' : 'FAIL'}`);
+          process.exit(ok ? 0 : 1);
+          EOF
+          node probe.mjs | tee -a "$GITHUB_STEP_SUMMARY"

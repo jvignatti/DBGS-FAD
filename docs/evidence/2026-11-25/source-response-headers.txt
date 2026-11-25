@@ -1,0 +1,24 @@
+HTTP/1.1 200 OK
+content-type: text/html; charset=UTF-8
+content-length: 38848
+date: Wed, 25 Nov 2026 16:40:09 GMT
+x-cache-hits: 2
+cache-control: max-age=1800, public
+x-drupal-dynamic-cache: MISS
+content-language: en
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+expires: Sun, 19 Nov 1978 05:00:00 GMT
+x-drupal-cache: MISS
+last-modified: Wed, 25 Nov 2026 16:26:41 GMT
+x-ah-environment: prod
+etag: W/"99a0682a21a163f76787c9dd3eadfcc6-gzip"
+accept-ranges: bytes
+vary: Cookie,Accept-Encoding
+x-cache: Miss from cloudfront
+age: 807
+x-envoy-upstream-service-time: 567
+server: volt-adc
+
+
+# Redacted: via, x-amz-cf-pop, x-amz-cf-id, x-request-id, x-volterra-location (network-location details)

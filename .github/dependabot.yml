@@ -1,0 +1,9 @@
+# D9: propose updates to pinned versions as PRs. Never auto-merged.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: monthly }

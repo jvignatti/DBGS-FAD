@@ -1,0 +1,95 @@
+# Weekday snapshot of the official BGS debarment page -> GitHub Pages.
+# Success: publish the new snapshot. Retrieval failure: re-publish the verified
+# previous snapshot with a "latest attempt failed" status, then mark the run red.
+# Test or build failure: deploy nothing (the live site stays as it was).
+name: Update debarment snapshot
+
+on:
+  schedule:
+    - cron: '0 7 * * 1-5'
+      timezone: 'America/New_York'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      fetch_outcome: ${{ steps.fetch.outcome }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (lockfile)
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests (fixtures only, no network to BGS)
+        run: npm test
+
+      - name: Retrieve official page (table + PDF)
+        id: fetch
+        continue-on-error: true
+        run: node scripts/fetch-debarment.mjs out/snapshot
+
+      - name: Build site from new snapshot
+        if: steps.fetch.outcome == 'success'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/build-site.mjs success out/snapshot
+
+      - name: Build site keeping previous snapshot (retrieval failed)
+        if: steps.fetch.outcome != 'success'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: node scripts/build-site.mjs failure out/snapshot/failure.json
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  report:
+    needs: [build, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Fail the run if retrieval failed (site shows the failure banner)
+        if: needs.build.outputs.fetch_outcome != 'success'
+        run: |
+          echo "::error title=Retrieval failed::Previous snapshot kept; see the 'Retrieve official page' step log."
+          exit 1
+      - name: OK
+        run: echo "Retrieval and deploy succeeded."

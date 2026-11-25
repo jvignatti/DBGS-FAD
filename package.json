@@ -1,0 +1,16 @@
+{
+  "name": "dbgs-fad",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unofficial prototype: weekday snapshot of the Vermont BGS debarment list (table + PDF of the official page).",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test tests/",
+    "fetch": "node scripts/fetch-debarment.mjs out/snapshot",
+    "build:success": "node scripts/build-site.mjs success out/snapshot"
+  },
+  "dependencies": {
+    "playwright": "1.65.0"
+  }
+}

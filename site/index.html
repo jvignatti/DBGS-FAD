@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Vermont Debarment Verification</title>
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="wrap">
+  <h1>Vermont Debarment Verification</h1>
+  <p class="notice">
+    <strong>Unofficial prototype.</strong> Not affiliated with or endorsed by the Vermont Department of Buildings and General Services (BGS).
+    The authoritative list is the official BGS page:
+    <a href="https://bgs.vermont.gov/purchasing-contracting/debarment" rel="noopener noreferrer">bgs.vermont.gov/purchasing-contracting/debarment</a>.
+    This page shows a copy taken at the retrieval time below. It is not real-time.
+  </p>
+</header>
+
+<main class="wrap">
+  <noscript><p class="banner banner-critical">This page needs JavaScript to show the snapshot. Please use the official BGS page linked above.</p></noscript>
+
+  <section aria-labelledby="status-h">
+    <h2 id="status-h" class="visually-hidden">Retrieval status</h2>
+    <div id="banner" class="banner" role="status" hidden></div>
+    <dl class="facts">
+      <div><dt>Last successful retrieval</dt><dd id="last-success">Loading…</dd></div>
+      <div><dt>Most recent attempt</dt><dd id="last-attempt">Loading…</dd></div>
+      <div><dt>Entities listed</dt><dd id="count-total">–</dd></div>
+    </dl>
+    <p class="download-row">
+      <a id="download" class="button" aria-disabled="true">Download PDF</a>
+      <span class="hint">PDF printed from the official BGS page at the same retrieval as the table below.</span>
+    </p>
+  </section>
+
+  <section aria-labelledby="list-h">
+    <h2 id="list-h">Debarment list</h2>
+    <label for="q">Search names</label>
+    <input id="q" type="search" autocomplete="off" spellcheck="false" disabled>
+    <p id="result-count" class="hint" aria-live="polite"></p>
+    <p id="empty-notice" class="banner banner-info" hidden>The official table listed no entities at the time of retrieval. Confirm on the official BGS page.</p>
+    <div class="table-scroll">
+      <table>
+        <caption>Records as published by BGS, in official order. Expired entries are not removed by this tool.</caption>
+        <thead><tr><th scope="col">Name</th><th scope="col">Expiration Term</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap hint">
+  <p>Search runs only in your browser. Nothing you type is sent anywhere. There are no cookies, analytics or tracking.</p>
+  <p>Updated automatically each weekday around 7:00 AM Eastern. Scheduled runs can be delayed. Source code: <a href="https://github.com/jvignatti/DBGS-FAD" rel="noopener noreferrer">github.com/jvignatti/DBGS-FAD</a>.</p>
+</footer>
+</body>
+</html>
